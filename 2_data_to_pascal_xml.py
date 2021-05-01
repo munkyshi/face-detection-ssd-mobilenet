@@ -34,6 +34,12 @@ def newXMLPASCALfile(imageheight, imagewidth, path, basename):
     ET.SubElement(annotation, "segmented").text = "0"
 
     tree = ET.ElementTree(annotation)
+    filename = basename.strip().replace(".jpg",".xml")
+    fullpath = os.path.join(path, filename)
+    if "14_Traffic_Traffic_14_654" in basename:
+        print("new xml path", fullpath)
+        tree.write(fullpath)
+
     # tree.write("filename.xml")
     return tree
 
@@ -49,6 +55,8 @@ def appendXMLPASCAL(curr_et_object,x1, y1, w, h, filename):
     ET.SubElement(bndbox, "xmax").text = str(x1+w)
     ET.SubElement(bndbox, "ymax").text = str(y1+h)
     filename = filename.strip().replace(".jpg",".xml")
+    if "14_Traffic_Traffic_14_654" in filename:
+        print(filename)
     curr_et_object.write(filename)
     return curr_et_object
 
@@ -77,6 +85,8 @@ def readAndWrite(bbx_gttxtPath):
                 img_path = inp[0]
                 img_path = img_path[:-1]
                 curr_img = img_path
+                if "14_Traffic_Traffic_14_654" in curr_img:
+                    print(curr_img)
                 if curr_img.isdigit():
                     continue
                 # print(Train_path+'/'+curr_img)
@@ -85,61 +95,68 @@ def readAndWrite(bbx_gttxtPath):
                 curr_filename = curr_img.split("/")[1].strip()
                 curr_path = os.path.join(Train_path, os.path.dirname(curr_img))
                 curr_et_object = newXMLPASCALfile(img.shape[0],img.shape[1],curr_path, curr_filename )
-                # print( curr_et_object  )
+                if "14_Traffic_Traffic_14_654" in curr_img:
+                    print( curr_et_object  )
 
             else:
                 # print(img)
                 inp = [int(i) for i in inp[:-1]]
                 x1, y1, w, h, blur, expression, illumination, invalid, occlusion, pose = inp
                 n = max(w,h)
-                if invalid == 1 or blur > 0 or n < 50:
+                if invalid == 1:
+                    # if invalid == 1 or blur > 0 or n < 50:
+                    # if "14_Traffic_Traffic_14_654" in curr_filename:
+                    #     print("invalid", invalid)
+                    #     print("blur", blur)
+                    #     print("n", n)
                     continue
-                img2 = img[y1:y1+n, x1:x1+n]
-                img3 = cv2.resize(img2, (80, 80))
-                vec = hog.compute(img3)
+                # img2 = img[y1:y1+n, x1:x1+n]
+                # img3 = cv2.resize(img2, (80, 80))
+                # vec = hog.compute(img3)
                 # data.append(vec)
                 # label.append(1)
                 cnt += 1
 
                 fileNow = os.path.join(curr_path,curr_filename)
-                print("{}: {} {} {} {}".format(len(vec),x1, y1, w, h) + " " + fileNow)
+                if "14_Traffic_Traffic_14_654" in fileNow:
+                    print("{} {} {} {}".format(x1, y1, w, h) + " " + fileNow)
 
                 curr_et_object = appendXMLPASCAL(curr_et_object,x1, y1, w, h, fileNow )
 
 
-# ################################ TRAINING DATA 9263 ITEMS ##################################
-# # # Run Script for Training data
-Train_path = os.path.join(curr_path, "data", "WIDER_train", "images" )
-## comment this out
-bbx_gttxtPath = os.path.join(curr_path, "data", "wider_face_split", "wider_face_train_bbx_gt.txt" )
-readAndWrite(bbx_gttxtPath)
-
-
-# To folders:
-to_xml_folder = os.path.join(curr_path, "data", "tf_wider_train", "annotations", "xmls" )
-to_image_folder = os.path.join(curr_path, "data", "tf_wider_train", "images" )
-
-# make dir => wider_data in folder
-try:
-    os.makedirs(to_xml_folder)
-    os.makedirs(to_image_folder)
-except Exception as e:
-    pass
-
-rootdir_glob = Train_path + '/**/*' # Note the added asterisks # This will return absolute paths
-file_list = [f for f in iglob(rootdir_glob, recursive=True) if os.path.isfile(f)]
-
-train_annotations_index = os.path.join(curr_path, "data", "tf_wider_train", "annotations", "train.txt" )
-
-with open(train_annotations_index, "a") as indexFile:
-    for f in file_list:
-        if ".xml" in f:
-            print(f)
-            copyfile(f, os.path.join(to_xml_folder, os.path.basename(f) ))
-            img = f.replace(".xml",".jpg")
-            copyfile(img, os.path.join(to_image_folder, os.path.basename(img) ))
-            indexFile.write(os.path.basename(f.replace(".xml","")) + "\n")
-
+# # ################################ TRAINING DATA 9263 ITEMS ##################################
+# # # # Run Script for Training data
+# Train_path = os.path.join(curr_path, "data", "WIDER_train", "images" )
+# ## comment this out
+# bbx_gttxtPath = os.path.join(curr_path, "data", "wider_face_split", "wider_face_train_bbx_gt.txt" )
+# readAndWrite(bbx_gttxtPath)
+# 
+# 
+# # To folders:
+# to_xml_folder = os.path.join(curr_path, "data", "tf_wider_train", "annotations", "xmls" )
+# to_image_folder = os.path.join(curr_path, "data", "tf_wider_train", "images" )
+# 
+# # make dir => wider_data in folder
+# try:
+#     os.makedirs(to_xml_folder)
+#     os.makedirs(to_image_folder)
+# except Exception as e:
+#     pass
+# 
+# rootdir_glob = Train_path + '/**/*' # Note the added asterisks # This will return absolute paths
+# file_list = [f for f in iglob(rootdir_glob, recursive=True) if os.path.isfile(f)]
+# 
+# train_annotations_index = os.path.join(curr_path, "data", "tf_wider_train", "annotations", "train.txt" )
+# 
+# with open(train_annotations_index, "a") as indexFile:
+#     for f in file_list:
+#         if ".xml" in f:
+#             print(f)
+#             copyfile(f, os.path.join(to_xml_folder, os.path.basename(f) ))
+#             img = f.replace(".xml",".jpg")
+#             copyfile(img, os.path.join(to_image_folder, os.path.basename(img) ))
+#             indexFile.write(os.path.basename(f.replace(".xml","")) + "\n")
+# 
 
 ################################ VALIDATION DATA 1873 ITEMS ##################################
 
@@ -169,7 +186,7 @@ train_annotations_index = os.path.join(curr_path, "data", "tf_wider_val", "annot
 with open(train_annotations_index, "a") as indexFile:
     for f in file_list:
         if ".xml" in f:
-            print(f)
+            # print(f)
             copyfile(f, os.path.join(to_xml_folder, os.path.basename(f) ))
             img = f.replace(".xml",".jpg")
             copyfile(img, os.path.join(to_image_folder, os.path.basename(img) ))

@@ -152,6 +152,12 @@ def draw_bounding_box_on_image(image,
   if use_normalized_coordinates:
     (left, right, top, bottom) = (xmin * im_width, xmax * im_width,
                                   ymin * im_height, ymax * im_height)
+    print(im_width, im_height)
+    print(left, right, top, bottom)
+    print("xmin: ", left)
+    print("xmax: ", right)
+    print("ymin: ", top)
+    print("ymax: ", bottom)
   else:
     (left, right, top, bottom) = (xmin, xmax, ymin, ymax)
   draw.line([(left, top), (left, bottom), (right, bottom),
